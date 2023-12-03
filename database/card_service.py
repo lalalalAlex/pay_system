@@ -2,13 +2,28 @@ from database.models import UserCard
 from database import get_db
 
 
+def checker_card(card_number):
+    db = next(get_db())
+    checker = db.query(UserCard).filter_by(card_number=card_number).first()
+    if checker:
+        return 'Карта есть'
+    else:
+        return False
+
+
 def add_card_db(user_id, card_number, balance, card_name, exp_date):
     db = next(get_db())
     new_card = UserCard(user_id=user_id, card_number=card_number, card_name=card_name, balance=balance,exp_date=exp_date)
-    db.add(new_card)
-    db.commit()
+    checker = checker_card(card_number)
+    if checker:
+        return {'status': 0,
+                'message': 'Карта уже есть'}
+    else:
+        db.add(new_card)
+        db.commit()
+        return {'status': 1,
+                'message': {'Карта успешно добавлена. Номер карты': new_card.card_number}}
 
-    return {'message': 'Карта успешно добавлена'}
 
 
 def get_exact_user_cards_db(user_id):
